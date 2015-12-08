@@ -3,20 +3,22 @@ package Implementations;
 import Exceptions.FailedKeyGenerationException;
 import Interfaces.Communicator;
 import Interfaces.EncryptionAlgorithm;
+import QueueHandler.MessageQueueHandler;
+import QueueHandler.UserMessageQueueHandler;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class Client implements Communicator, Runnable {
+public class Client implements Communicator {
     private Map<Communicator, byte[]> encryptionKeys = new HashMap<>();
 
-    private Queue<Message> generalMessageQueue = new LinkedList<>();
-    private Queue<Message> keyGenerationMessageQueue = new LinkedList<>();
-    private Queue<Message> userMessageQueue = new LinkedList<>();
+    private BlockingQueue<Message> generalMessageQueue = new LinkedBlockingQueue<>();
+    private BlockingQueue<Message> keyGenerationMessageQueue = new LinkedBlockingQueue<>();
+    private BlockingQueue<Message> userMessageQueue = new LinkedBlockingQueue<>();
 
     private final BigInteger g;
     private final BigInteger p;
@@ -38,6 +40,17 @@ public class Client implements Communicator, Runnable {
                             "DE2BCBF6 95581718 3995497C EA956AE5 15D22618 98FA0510" +
                             "15728E5A 8AACAA68 FFFFFFFF FFFFFFFF".replaceAll(" ", ""), 16);
         // p und g wurden nach RFC 3526 gewählt. Sie entsprechen Gruppen ID 14. 2048bit
+
+        MessageQueueHandler mqh = new MessageQueueHandler(generalMessageQueue,
+                keyGenerationMessageQueue,
+                userMessageQueue);
+        mqh.start();
+
+        UserMessageQueueHandler umqh = new UserMessageQueueHandler(userMessageQueue, ea, encryptionKeys);
+        umqh.start();
+
+        keyGenerationMessageQueueHandler kgmqh = new KeyGenerationMessageQueueHandler();
+        kgmqh.start();
     }
 
     @Override
@@ -67,12 +80,5 @@ public class Client implements Communicator, Runnable {
     private void generateKeys(Communicator bob) {
         String initiationMessage = "DHIP" //TODO
 
-    }
-
-    @Override
-    public void run() {
-        while(true) {
-            //TODO
-        }
     }
 }
