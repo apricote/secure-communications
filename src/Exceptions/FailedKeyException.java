@@ -1,4 +1,4 @@
 package Exceptions;
 
-public class FailedKeyGenerationException extends Exception {
+public class FailedKeyException extends Exception {
 }
