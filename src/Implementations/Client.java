@@ -3,6 +3,7 @@ package Implementations;
 import Exceptions.FailedKeyGenerationException;
 import Interfaces.Communicator;
 import Interfaces.EncryptionAlgorithm;
+import QueueHandler.KeyGenerationMessageQueueHandler;
 import QueueHandler.MessageQueueHandler;
 import QueueHandler.UserMessageQueueHandler;
 
@@ -49,7 +50,7 @@ public class Client implements Communicator {
         UserMessageQueueHandler umqh = new UserMessageQueueHandler(userMessageQueue, ea, encryptionKeys);
         umqh.start();
 
-        keyGenerationMessageQueueHandler kgmqh = new KeyGenerationMessageQueueHandler();
+        KeyGenerationMessageQueueHandler kgmqh = new KeyGenerationMessageQueueHandler(keyGenerationMessageQueue, ea, encryptionKeys, p, g, this);
         kgmqh.start();
     }
 
@@ -62,7 +63,7 @@ public class Client implements Communicator {
     @Override
     public void sendSecureMessage(Communicator recv, String msg) throws FailedKeyGenerationException {
         if(!encryptionKeys.containsKey(recv)) {
-            generateKeys(recv);
+            initiateKeyExchange(recv);
         }
 
         byte[] encryptedMessage = ea.encrypt(msg.getBytes(StandardCharsets.UTF_8), encryptionKeys.get(recv));
@@ -77,8 +78,9 @@ public class Client implements Communicator {
         generalMessageQueue.add(msg);
     }
 
-    private void generateKeys(Communicator bob) {
-        String initiationMessage = "DHIP" //TODO
-
+    private void initiateKeyExchange(Communicator bob) {
+        byte[] keyExchangeInitiationMsg = {(byte) 1};
+        Message initiationMsg = new Message(this, bob, keyExchangeInitiationMsg, false, false);
+        bob.receiveMessage(initiationMsg);
     }
 }
