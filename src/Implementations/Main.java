@@ -8,7 +8,15 @@ public class Main {
         Client c1 = new Client();
         Client c2 = new Client();
 
-        c1.sendRawMessage(c2, "Hiii", true);
-        c1.sendSecureMessage(c2, "Blub");
+        c1.sendSecureMessage(c2, "Guten Tag");
+        c2.sendSecureMessage(c1, "Wie geht es dir?");
+
+
+        try {
+            Thread.sleep(200l);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.exit(0);
     }
 }

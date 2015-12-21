@@ -58,12 +58,14 @@ public class KeyGenerationMessageQueueHandler extends Thread {
                         //Übermittle p
                         ked.p = p;
                         Message transmitPMessage = buildBigIntegerTransmitMessage((byte) 2, ked.p, msg.sender);
+                        System.out.println("Bob: Übermittle P");
 
                         msg.sender.receiveMessage(transmitPMessage);
 
                         // Übermittle g
                         ked.g = g;
                         Message transmitGMessage = buildBigIntegerTransmitMessage((byte) 3, ked.g, msg.sender);
+                        System.out.println("Bob: Übermittle G");
 
                         msg.sender.receiveMessage(transmitGMessage);
 
@@ -73,6 +75,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
                         // Berechne Alpha und übertrage
                         ked.alpha = oneWayFunction(ked.g, ked.p, ked.secretNumber);
                         Message transmitAlphaMessage = buildBigIntegerTransmitMessage((byte) 4, ked.alpha, msg.sender);
+                        System.out.println("Bob: Übermittle Alpha");
 
                         msg.sender.receiveMessage(transmitAlphaMessage);
 
@@ -80,6 +83,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
 
                     case 2: // Empfange p und generiere eigene Geheimzahl
                         // ALICE
+                        System.out.println("Alice: Empfange P");
                         byte[] pAsBytes = Arrays.copyOfRange(msg.msg, 1, msg.msg.length); // Order Byte weglassen
                         BigInteger p = new BigInteger(pAsBytes);
                         ked.p = p;
@@ -90,6 +94,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
 
                     case 3: // Empfange g
                         // ALICE
+                        System.out.println("Alice: Empfange G");
                         byte[] gAsBytes = Arrays.copyOfRange(msg.msg, 1, msg.msg.length); // Order Byte weglassen
                         BigInteger g = new BigInteger(gAsBytes);
                         ked.g = g;
@@ -98,6 +103,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
 
                     case 4: // Empfange Alpha, berechne Beta, übertrage Beta, berechne den geheimen Schlüssel -> Abschluss
                         // ALICE
+                        System.out.println("Alice: Empfange Alpha");
                         byte[] alphaAsBytes = Arrays.copyOfRange(msg.msg, 1, msg.msg.length); // Order Byte weglassen
                         BigInteger alpha = new BigInteger(alphaAsBytes);
                         ked.alpha = alpha;
@@ -105,6 +111,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
                         // berechne+übermittle beta
                         ked.beta = oneWayFunction(ked.g, ked.p, ked.secretNumber);
                         Message transmitBetaMessage = buildBigIntegerTransmitMessage((byte) 5, ked.beta, msg.sender);
+                        System.out.println("Alice: Übermittle Beta");
 
                         msg.sender.receiveMessage(transmitBetaMessage);
 
@@ -112,6 +119,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
 
                         ked.secretKey = oneWayFunction(ked.alpha, ked.p, ked.secretNumber);
                         keys.put(msg.sender, ked.secretKey.toByteArray());
+                        System.out.println("Alice: Schlüssel wurde generiert!");
 
                         //Aufräumen!
                         detailsMap.remove(msg.sender);
@@ -120,6 +128,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
 
                     case 5: // Empfange Beta, berechne den geheimen Schlüssel -> Abschluss
                         // BOB
+                        System.out.println("Bob: Empfange Beta");
                         byte[] betaAsBytes = Arrays.copyOfRange(msg.msg, 1, msg.msg.length); // Order Byte weglassen
                         BigInteger beta = new BigInteger(betaAsBytes);
                         ked.beta = beta;
@@ -128,6 +137,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
 
                         ked.secretKey = oneWayFunction(ked.beta, ked.p, ked.secretNumber);
                         keys.put(msg.sender, ked.secretKey.toByteArray());
+                        System.out.println("Bob: Schlüssel wurde generiert!");
 
                         //Aufräumen!
                         detailsMap.remove(msg.sender);
@@ -136,7 +146,7 @@ public class KeyGenerationMessageQueueHandler extends Thread {
                         detailsMap.remove(msg.sender);
 
                 }
-
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

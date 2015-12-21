@@ -1,6 +1,5 @@
 package Implementations;
 
-import Exceptions.FailedKeyException;
 import Interfaces.Communicator;
 import Interfaces.EncryptionAlgorithm;
 import QueueHandler.KeyGenerationMessageQueueHandler;
@@ -63,6 +62,7 @@ public class Client implements Communicator {
     @Override
     public void sendSecureMessage(Communicator recv, String msg) {
         if(!encryptionKeys.containsKey(recv)) {
+            System.out.println(this.toString() + ": Keine Schlüssel für Kommunikationspartner " + recv.toString() + " vorhanden.");
             initiateKeyExchange(recv);
         }
 
@@ -75,6 +75,7 @@ public class Client implements Communicator {
 
     @Override
     public void receiveMessage(Message msg) {
+        System.out.println(msg.toString());
         generalMessageQueue.add(msg);
     }
 
@@ -91,5 +92,6 @@ public class Client implements Communicator {
                 e.printStackTrace();
             }
         }
+        System.out.println("Schlüssel wurde generiert und die Nachricht kann nun verschlüsselt werden.");
     }
 }

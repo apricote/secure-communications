@@ -28,6 +28,7 @@ public class MessageQueueHandler extends Thread {
                 } else {
                     keyGenerationMessageQueue.put(oldestMessage);
                 }
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

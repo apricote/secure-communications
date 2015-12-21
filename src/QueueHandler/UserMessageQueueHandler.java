@@ -23,18 +23,18 @@ public class UserMessageQueueHandler extends Thread {
 
     @Override
     public void run() {
-        while(true) {
+        while (true) {
             try {
                 Message msg = userMessageQueue.take();
-                byte[] unencryptedBytes = new byte[0];
-                if(msg.isEncrypted) {
-                    if(encryptionKeys.containsKey(msg.sender)) {
-                        unencryptedBytes = encryptionAlgorithm.decrypt(msg.msg, encryptionKeys.get(msg.sender));
-                    }
+                byte[] unencryptedBytes;
+                if (msg.isEncrypted && !encryptionKeys.containsKey(msg.sender)) {
+                    Thread.sleep(10);
+                }
+                if (msg.isEncrypted && encryptionKeys.containsKey(msg.sender)) {
+                    unencryptedBytes = encryptionAlgorithm.decrypt(msg.msg, encryptionKeys.get(msg.sender));
                 } else {
                     unencryptedBytes = msg.msg;
                 }
-
                 String text = new String(unencryptedBytes, StandardCharsets.UTF_8);
 
                 System.out.println(text);
